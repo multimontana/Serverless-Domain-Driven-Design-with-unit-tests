@@ -1,0 +1,95 @@
+schema {
+  query: Query
+  mutation: Mutation
+  subscription: Subscription
+}
+
+type Transaction {
+  balance: Float!
+  delta: Float!
+  date: AWSDateTime!
+  description: String!
+}
+
+type AccountResponse {
+  balance: Float!
+  active: Boolean!
+  transactions: [Transaction!]!
+  response_time: AWSDateTime!
+}
+
+type Query {
+  getAccountByUserId(userId: ID!): AccountResponse
+}
+
+type VoidResponse {
+  response_time: AWSDateTime!
+}
+
+type IdResponse {
+  id: ID!
+  response_time: AWSDateTime!
+}
+type TransferResponse {
+  fromTransaction: ID!
+  toTransaction: ID!
+  response_time: AWSDateTime!
+}
+
+type TransactionWithId {
+  balance: Float!
+  delta: Float!
+  date: AWSDateTime!
+  description: String!
+  id: ID!
+}
+input TransactionWithIdInput {
+  balance: Float!
+  delta: Float!
+  date: AWSDateTime!
+  description: String!
+  id: ID!
+}
+enum NotificationTypes {
+  TransactionCreated
+}
+enum NotificationTargets {
+  FE
+}
+type TransactionCreatedNotification {
+  target: NotificationTargets!
+  type: NotificationTypes!
+  accountId: ID!
+  transaction: TransactionWithId!
+}
+input NotifyTransactionCreatedInput {
+  target: NotificationTargets!
+  type: NotificationTypes!
+  accountId: ID!
+  transaction: TransactionWithIdInput!
+}
+
+type Mutation {
+  createTransaction(userId: ID!, description: String!, delta: Float!): IdResponse
+  transfer(
+    fromUserId: ID!
+    toUserId: ID!
+    quantity: Float!
+    fromDescription: String!
+    toDescription: String
+  ): TransferResponse
+  createUser(
+    email: AWSEmail!
+    password: String!
+    username: String!
+    alias: String
+  ): IdResponse
+  notifyTransactionCreated(
+    data: NotifyTransactionCreatedInput!
+  ): TransactionCreatedNotification! @aws_iam
+}
+
+type Subscription {
+  onNotifyTransactionCreated: TransactionCreatedNotification
+    @aws_subscribe(mutations: ["notifyTransactionCreated"])
+}

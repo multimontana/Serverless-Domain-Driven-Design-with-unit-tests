@@ -1,0 +1,53 @@
+name: Deploy to dev
+
+on:
+  push:
+    branches:
+      - master
+
+env:
+  AWS_REGION: us-east-1
+
+permissions:
+  contents: read
+
+jobs:
+
+  deploy:
+    name: Deploy
+    runs-on: ubuntu-latest
+    environment: dev
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v3
+
+      - name: Configure AWS credentials
+        uses: aws-actions/configure-aws-credentials@v1
+        with:
+          aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
+          aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+          aws-region: ${{ env.AWS_REGION }}
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Unit tests
+        run: npm run test-unit
+
+# Skip deployment for now, leave the already deployed infra as is
+
+#      - name: Deploy and create .env
+#        run: |
+#          npm run deploy -- --stage dev
+#          npm run create-env
+
+#      - name: Run migrations
+#        run: npm run db-migrate
+
+#      - name: Integration tests
+#        run: npm run test-int
+
+#      - name: E2E tests
+#        run: npm run test-e2e
+

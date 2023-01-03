@@ -1,0 +1,9 @@
+/.idea/
+/node_modules/
+/setAwsProfile.sh
+/coverage/
+.sst
+.build
+/awsConfig.sh
+/.env*
+/notes.txt
